@@ -15,7 +15,9 @@ Una vez descargado el repositorio y creado el ambiente virtual, se debe ejecutar
 Posteriormente se ejecuta la aplicación con los siguientes comandos (en linux):
 
 export FLASK_APP=ABC
+
 export FLASK_ENV=nombre_ambiente_virtual
+
 flask run
 
 ### Ejecución
