@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Eventos{% endblock %}</h1>
+  {% if g.user %}
+    <a class="action" href="{{ url_for('evento.create') }}">New</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <form action="{{ url_for('evento.create') }}" method="get">
+    <input type="submit" class="btn btn-outline-info btn-lg" value="Agregar evento"/>
+  </form>
+  <hr>
+  {% for evento in eventos %}
+  <div class="card">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-9">
+          <h2 class="card-title">{{ evento['nombre'] }}</h2>
+        </div>
+        <div class="col-1 align-self-cente">
+          <form action="{{ url_for('evento.detail', id=evento['id']) }}">
+            <input type="submit" class="btn btn-outline-success btn-lg" value="Ver detalles"></input>
+          </form>
+        </div>
+        <div class="col-1 align-self-cente" >
+          <form action="{{ url_for('evento.update', id=evento['id']) }}">
+            <input type="submit" class="btn btn-outline-primary btn-lg" value="Editar"></input>
+          </form>
+        </div>
+        <div class="col-1 align-self-cente">
+          <form action="{{ url_for('evento.delete', id=evento['id']) }}" method="post">
+            <input type="submit" class="btn btn-outline-danger btn-lg" value="Eliminar" onclick="return confirm('¿Esta seguro?');"></input>
+          </form>
+        </div>
+      </div>
+      <p class="card-text">Fecha del evento: {{ evento['fechaInicial'] }}</p>
+      <p class="card-text">Fecha de creación: {{ evento['created'] }}</p>
+    </div>
+  </div>
+ {% if not loop.last %}
+  <hr>
+{% endif %}
+{% endfor %}
+</div>
+{% endblock %}

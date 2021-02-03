@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Editar "{{ evento['nombre'] }}"{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <form method="post">
+    <div class="col-md-12">
+      <div class="form-group">
+        <label for="nombre">Nombre</label>
+        <input name="nombre" id="nombre" class="form-control" maxlength="50" value="{{ request.form['nombre'] or evento['nombre'] }}" required>
+
+        <label for="categoria">Categoría</label>
+        <select name="categoria" id="categoria" class="form-control" value="{{ request.form['categoria'] or evento['categoria']}}" required>
+          <option value="Conferencia">Conferencia</option> 
+          <option value="Seminario">Seminario</option> 
+          <option value="Congreso">Congreso</option>
+          <option value="Curso">Curso</option> 
+      </select>
+
+        <label for="lugar">Lugar</label>
+        <input name="lugar" id="lugar" class="form-control" maxlength="100" value="{{ request.form['lugar'] or evento['lugar']}}" required>
+
+        <label for="direccion">Dirección</label>
+        <input name="direccion" id="direccion" class="form-control" maxlength="150" value="{{ request.form['direccion'] or evento['direccion']}}" required>
+
+        <label for="fechaInicial">Fecha Inicial</label>
+        <input name="fechaInicial" id="fechaInicial" class="form-control" type="date" value="{{ request.form['fechaInicial'] or evento['fechaInicial']}}" required>
+
+        <label for="fechaFinal">Fecha Final</label>
+        <input name="fechaFinal" id="fechaFinal" class="form-control" type="date" value="{{ request.form['fechaFinal'] or evento['fechaFinal']}}" required>
+
+        <label for="tipo">Tipo</label>
+        <select name="tipo" id="tipo" class="form-control" value="{{ request.form['tipo'] or evento['tipo']}}" required>
+          <option value="Presencial">Presencial</option> 
+          <option value="Virtual">Virtual</option> 
+      </select>
+      <hr>
+        <input type="submit" class="btn btn-success btn-lg" value="Save">
+      </div>
+    </div>
+  </form>
+</div>
+<hr>
+{% endblock %}
