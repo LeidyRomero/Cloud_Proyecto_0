@@ -10,7 +10,7 @@ bp = Blueprint('evento', __name__)
 
 #-------------------------------------------VISTAS--------------------------------------
 @bp.route('/index')
-#@login_required
+@login_required
 def index():
     if g.user is None:
         autor=request.cookies.get('autor')
@@ -27,7 +27,7 @@ def index():
     return render_template('evento/index.html', eventos=eventos)
 
 @bp.route('/create', methods=('GET', 'POST'))
-#@login_required
+@login_required
 def create():
     if request.method == 'POST':
         nombre = request.form['nombre']
@@ -65,7 +65,7 @@ def create():
     return render_template('evento/create.html')
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
-#@login_required
+@login_required
 def update(id):
     evento = get_evento(id)
 
@@ -97,7 +97,7 @@ def update(id):
     return render_template('evento/update.html', evento=evento)
 
 @bp.route('/<int:id>/delete', methods=('POST',))
-#@login_required
+@login_required
 def delete(id):
     get_evento(id)
     db = get_db()
@@ -127,7 +127,7 @@ def get_evento(id, check_author=True):
     return evento
 
 @bp.route('/eventos/<int:id>/', methods=('GET',))
-#@login_required
+@login_required
 def detail(id):
     db = get_db()
     evento = db.execute(
