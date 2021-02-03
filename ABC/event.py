@@ -1,5 +1,5 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, g, redirect, render_template, request, url_for, session, make_response
 )
 from werkzeug.exceptions import abort
 
@@ -10,32 +10,25 @@ bp = Blueprint('evento', __name__)
 
 #-------------------------------------------VISTAS--------------------------------------
 @bp.route('/index')
-@login_required
+#@login_required
 def index():
+    if g.user is None:
+        autor=request.cookies.get('autor')
+    else:
+        autor=g.user['id']
+
     db = get_db()
     eventos = db.execute(
-        'SELECT p.id, created, author_id, nombre, fechaInicial, email'
+        'SELECT p.id, created, author_id, nombre, fechaInicial, Username'
         ' FROM evento p JOIN user u ON p.author_id = u.id'
         ' WHERE u.id = ?'
-        ' ORDER BY created DESC',(g.user['id'],)
+        ' ORDER BY created DESC',(autor,)
     ).fetchall()
-    print(type(eventos))
     return render_template('evento/index.html', eventos=eventos)
 
-@bp.route('/eventos')
-def getAll():
-    db = get_db()
-    eventos = db.execute(
-        'SELECT p.id, created, author_id, nombre, categoria, lugar, direccion, fechaInicial, fechaFinal, tipo, email'
-        ' FROM evento p JOIN user u ON p.author_id = u.id'
-        ' ORDER BY created DESC'
-    ).fetchall()
-    return str(eventos)
-
 @bp.route('/create', methods=('GET', 'POST'))
-@login_required
+#@login_required
 def create():
-    print(request)
     if request.method == 'POST':
         nombre = request.form['nombre']
         categoria = request.form['categoria']
@@ -44,8 +37,16 @@ def create():
         fechaInicial = request.form['fechaInicial']
         fechaFinal = request.form['fechaFinal']
         tipo = request.form['tipo']
+
+        print(request.cookies.get('autor'))
+        if g.user is None:
+            autor=request.cookies.get('autor')
+        else:
+            autor=g.user['id']
+
         error = None
         print(fechaInicial)
+        print(autor)
         if not nombre:
             error = 'Name is required.'
 
@@ -56,7 +57,7 @@ def create():
             db.execute(
                 'INSERT INTO evento (nombre, categoria, lugar, direccion, tipo, fechaInicial, fechaFinal, author_id)'
                 ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                (nombre, categoria, lugar, direccion, tipo, fechaInicial, fechaFinal, g.user['id'])
+                (nombre, categoria, lugar, direccion, tipo, fechaInicial, fechaFinal, autor)
             )
             db.commit()
             return redirect(url_for('evento.index'))
@@ -64,7 +65,7 @@ def create():
     return render_template('evento/create.html')
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
-@login_required
+#@login_required
 def update(id):
     evento = get_evento(id)
 
@@ -96,7 +97,7 @@ def update(id):
     return render_template('evento/update.html', evento=evento)
 
 @bp.route('/<int:id>/delete', methods=('POST',))
-@login_required
+#@login_required
 def delete(id):
     get_evento(id)
     db = get_db()
@@ -106,7 +107,7 @@ def delete(id):
 #-------------------------------------------FUNCIONES--------------------------------------
 def get_evento(id, check_author=True):
     evento = get_db().execute(
-        'SELECT p.id, created, author_id, nombre, categoria,lugar,direccion,tipo, email'
+        'SELECT p.id, created, author_id, nombre, categoria,lugar,direccion,tipo, Username'
         ' FROM evento p JOIN user u ON p.author_id = u.id'
         ' WHERE p.id = ?',
         (id,)
@@ -115,18 +116,23 @@ def get_evento(id, check_author=True):
     if evento is None:
         abort(404, "Event id {0} doesn't exist.".format(id))
 
-    if check_author and evento['author_id'] != g.user['id']:
+    if g.user is None:
+        autor=request.cookies.get('autor')
+    else:
+        autor=g.user['id']
+
+    if check_author and evento['author_id'] != autor:
         abort(403)
 
     return evento
 
-@bp.route('/<int:id>/', methods=('GET',))
+@bp.route('/eventos/<int:id>/', methods=('GET',))
+#@login_required
 def detail(id):
     db = get_db()
     evento = db.execute(
-        'SELECT p.id, created, author_id, nombre, categoria, lugar, direccion, fechaInicial, fechaFinal, tipo, email'
+        'SELECT p.id, created, author_id, nombre, categoria, lugar, direccion, fechaInicial, fechaFinal, tipo, Username'
         ' FROM evento p JOIN user u ON p.author_id = u.id'
         ' WHERE p.id = ?',(id,)
     ).fetchone()
-    print(evento['nombre'])
     return render_template('evento/detail.html',evento=evento)

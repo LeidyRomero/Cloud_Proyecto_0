@@ -1,7 +1,7 @@
 import functools
-
+import re 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, g, redirect, render_template, request, session, url_for, make_response
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -26,22 +26,24 @@ def register():
     if g.user is None:
         if request.method == 'POST':
 
-            email = request.form['email']
-            password = request.form['password']
+            email = request.form['Username']
+            password = request.form['Password']
             db = get_db()
             error = None
-            if not email:
+            if not valid_email(email):
+                error = 'Please enter a valid email.'
+            elif not email:
                 error = 'Email is required.'
             elif not password:
                 error = 'Password is required.'
             elif db.execute(
-                'SELECT id FROM user WHERE email = ?', (email,)
+                'SELECT id FROM user WHERE Username = ?', (email,)
             ).fetchone() is not None:
                 error = 'User {} is already registered.'.format(email)
 
             if error is None:
                 db.execute(
-                    'INSERT INTO user (email, password) VALUES (?, ?)',
+                    'INSERT INTO user (Username, Password) VALUES (?, ?)',
                     (email, generate_password_hash(password))
                 )
                 db.commit()
@@ -56,30 +58,39 @@ def register():
 
 @bp.route('/', methods=('GET', 'POST'))
 def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        db = get_db()
-        error = None
-        user = db.execute(
-            'SELECT * FROM user WHERE email = ?', (email,)
-        ).fetchone()
+    if g.user is None:
+        if request.method == 'POST':
+            email = request.form['Username']
+            password = request.form['Password']
+            db = get_db()
+            error = None
+            user = db.execute(
+                'SELECT * FROM user WHERE Username = ?', (email,)
+            ).fetchone()
 
-        if user is None:
-            error = 'Incorrect email.'
-        elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
+            if email is None:
+                error = 'Incorrect email.'
+            elif not valid_email(email):
+                error = 'Please enter a valid email.'
+            elif not check_password_hash(user['Password'], password):
+                error = 'Incorrect password.'
 
-        if error is None:
+            if error is None:
 
-            session.clear()
-            session['user_id'] = user['id']
-            return redirect(url_for('evento.index'))
+                session.clear()
+                session['user_id'] = user['id']
+                resp=make_response(redirect(url_for('evento.index')))
+                resp.headers['id']=session['user_id']
+                return resp
 
-        flash(error)
+            flash(error)
 
-    return render_template('auth/login.html')
-
+        return render_template('auth/login.html')
+    else:
+        resp=make_response(redirect(url_for('evento.index')))
+        resp.headers['id']=session['user_id']
+        return resp
+        
 #Se ejecuta antes de cualquier request
 @bp.before_app_request
 def load_logged_in_user():
@@ -97,3 +108,10 @@ def load_logged_in_user():
 def logout():
     session.clear()
     return redirect(url_for('auth.login'))
+
+regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+def valid_email(email):
+    if(re.search(regex,email)):  
+        return True
+    else:  
+        return False

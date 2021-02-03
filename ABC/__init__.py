@@ -39,6 +39,6 @@ def create_app(test_config=None):
 	app.register_blueprint(auth.bp)
 	#Agrega el blueprint de autenticacion=modulo compuesto por varias vistas
 	app.register_blueprint(event.bp)
-	app.add_url_rule('/', endpoint='register')
+	app.add_url_rule('/', endpoint='login')
 	return app
 

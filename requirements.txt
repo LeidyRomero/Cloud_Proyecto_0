@@ -1,0 +1,14 @@
+blinker
+Flask
+Flask-Bootstrap
+flask-marshmallow
+Flask-RESTful
+Flask-SQLAlchemy
+Jinja2
+MarkupSafe
+marshmallow
+python-dotenv
+simplejson
+SQLAlchemy
+watchdog
+Werkzeug
